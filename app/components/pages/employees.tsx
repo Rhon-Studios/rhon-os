@@ -447,68 +447,147 @@ export default function Employees() {
           )}
 
         {!error && !loading && filteredEmployees.length > 0 && (
-          <div className="border border-zinc-800 bg-zinc-900/60 overflow-hidden flex flex-col h-full">
-            <ul className="flex-1 overflow-y-auto divide-y divide-zinc-800/60 pb-30">
+          <div className="flex flex-col h-full">
+            <div className="hidden lg:flex flex-col flex-1 min-h-0">
+              <div className="border border-zinc-800 bg-zinc-900/60 overflow-hidden flex flex-col h-full">
+                <ul className="flex-1 overflow-y-auto divide-y divide-zinc-800/60 pb-30">
+                  {filteredEmployees.map((employee) => (
+                    <li
+                      onClick={() => {
+                        setEmployee(employee);
+                        setEditModal(true);
+                      }}
+                      key={employee.id}
+                      className="grid grid-cols-[2rem_1.5fr_2fr_1fr_2fr_100px_90px_80px] items-center px-6 py-4 hover:bg-zinc-800/40 transition-colors duration-150 cursor-pointer"
+                    >
+                      <span
+                        className={`h-2 w-2 rounded-full ${
+                          employee.active ? "bg-emerald-400" : "bg-zinc-600"
+                        }`}
+                      />
+                      <span className="text-sm text-zinc-100">
+                        {employee.name}
+                      </span>
+                      <span className="text-sm text-zinc-500">
+                        {employee.email}
+                      </span>
+                      <span className="text-sm text-zinc-400 flex items-center gap-1.5">
+                        {employee.role_name ?? "—"}
+                        {employee.is_admin && (
+                          <span className="text-[10px] uppercase tracking-wide bg-zinc-700 text-zinc-200 px-1.5 py-0.5 rounded-md">
+                            Admin
+                          </span>
+                        )}
+                      </span>
+                      <span className="flex flex-wrap justify-center gap-1">
+                        {employee.projects?.length
+                          ? employee.projects.map((project: string) => (
+                              <span
+                                key={project}
+                                className={`px-2 py-0.5 rounded-md border text-[10px] font-medium ${
+                                  projectStyles[project.toLowerCase()] ??
+                                  "bg-zinc-700 text-zinc-200 border-zinc-600"
+                                }`}
+                              >
+                                {project}
+                              </span>
+                            ))
+                          : "—"}
+                      </span>
+                      <span className="text-sm text-zinc-400">
+                        {employee.country ?? "—"}
+                      </span>
+
+                      <span className="text-sm text-zinc-400">
+                        {employee.gender ?? "—"}
+                      </span>
+                      <span className="text-right text-xs">
+                        <span
+                          className={
+                            employee.active
+                              ? "text-emerald-400"
+                              : "text-zinc-500"
+                          }
+                        >
+                          {employee.active ? "Active" : "Inactive"}
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="lg:hidden flex-1 overflow-y-auto divide-y divide-zinc-800">
               {filteredEmployees.map((employee) => (
-                <li
+                <div
+                  key={employee.id}
                   onClick={() => {
                     setEmployee(employee);
                     setEditModal(true);
                   }}
-                  key={employee.id}
-                  className="grid grid-cols-[2rem_1.5fr_2fr_1fr_2fr_100px_90px_80px] items-center px-6 py-4 hover:bg-zinc-800/40 transition-colors duration-150 cursor-pointer"
+                  className="p-4 space-y-3 cursor-pointer hover:bg-zinc-800/40"
                 >
-                  <span
-                    className={`h-2 w-2 rounded-full ${
-                      employee.active ? "bg-emerald-400" : "bg-zinc-600"
-                    }`}
-                  />
-                  <span className="text-sm text-zinc-100">{employee.name}</span>
-                  <span className="text-sm text-zinc-500">
-                    {employee.email}
-                  </span>
-                  <span className="text-sm text-zinc-400 flex items-center gap-1.5">
-                    {employee.role_name ?? "—"}
-                    {employee.is_admin && (
-                      <span className="text-[10px] uppercase tracking-wide bg-zinc-700 text-zinc-200 px-1.5 py-0.5 rounded-md">
-                        Admin
-                      </span>
-                    )}
-                  </span>
-                  <span className="flex flex-wrap justify-center gap-1">
-                    {employee.projects?.length
-                      ? employee.projects.map((project: string) => (
-                          <span
-                            key={project}
-                            className={`px-2 py-0.5 rounded-md border text-[10px] font-medium ${
-                              projectStyles[project.toLowerCase()] ??
-                              "bg-zinc-700 text-zinc-200 border-zinc-600"
-                            }`}
-                          >
-                            {project}
-                          </span>
-                        ))
-                      : "—"}
-                  </span>
-                  <span className="text-sm text-zinc-400">
-                    {employee.country ?? "—"}
-                  </span>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-white font-medium">
+                        {employee.name}
+                      </h3>
+                      <p className="text-sm text-zinc-500 break-all">
+                        {employee.email}
+                      </p>
+                    </div>
 
-                  <span className="text-sm text-zinc-400">
-                    {employee.gender ?? "—"}
-                  </span>
-                  <span className="text-right text-xs">
                     <span
-                      className={
+                      className={`text-xs ${
                         employee.active ? "text-emerald-400" : "text-zinc-500"
-                      }
+                      }`}
                     >
                       {employee.active ? "Active" : "Inactive"}
                     </span>
-                  </span>
-                </li>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {employee.role_name && (
+                      <span className="rounded-md border border-zinc-700 px-2 py-1 text-xs">
+                        {employee.role_name}
+                      </span>
+                    )}
+
+                    {employee.is_admin && (
+                      <span className="rounded-md bg-zinc-700 px-2 py-1 text-xs">
+                        Admin
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap gap-1">
+                    {employee.projects?.map((project) => (
+                      <span
+                        key={project}
+                        className={`px-2 py-1 rounded-md border text-[10px] ${
+                          projectStyles[project.toLowerCase()] ??
+                          "bg-zinc-700 text-zinc-200 border-zinc-600"
+                        }`}
+                      >
+                        {project}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs text-zinc-400">
+                    <div>
+                      <span className="text-zinc-500">Country</span>
+                      <p>{employee.country || "—"}</p>
+                    </div>
+
+                    <div>
+                      <span className="text-zinc-500">Gender</span>
+                      <p>{employee.gender || "—"}</p>
+                    </div>
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
         )}
 
