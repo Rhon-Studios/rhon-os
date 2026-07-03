@@ -9,7 +9,16 @@ export async function PUT(
   const { id } = await params;
   const client = neon(process.env.DATABASE_URL!);
 
-  const { name, email, active, role_id, projectIds } = body;
+  const {
+    name,
+    email,
+    active,
+    role_id,
+    projectIds,
+    country,
+    timezone,
+    gender,
+  } = body;
 
   await client`
     UPDATE employee
@@ -17,7 +26,10 @@ export async function PUT(
       name = ${name},
       email = ${email},
       active = ${active},
-      role_id = ${role_id}
+      role_id = ${role_id},
+      country = ${country},
+      timezone = ${timezone},
+      gender = ${gender || null}
     WHERE id = ${id}
   `;
 

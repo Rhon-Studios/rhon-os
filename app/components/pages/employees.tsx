@@ -396,12 +396,14 @@ export default function Employees() {
           </p>
         </div>
 
-        <div className="grid grid-cols-[2rem_1.5fr_1.5fr_1fr_5rem_1fr] px-6 py-3 text-xs uppercase tracking-wide text-zinc-500 border-b border-zinc-800/80">
+        <div className="grid grid-cols-[2rem_1.5fr_2fr_1fr_2fr_100px_90px_80px] px-6 py-3 text-xs uppercase tracking-wide text-zinc-500 border-b border-zinc-800/80">
           <span></span>
           <span>Name</span>
           <span>Email</span>
           <span>Role</span>
           <span>Projects</span>
+          <span>Country</span>
+          <span>Gender</span>
           <span className="text-right">Status</span>
         </div>
 
@@ -412,7 +414,7 @@ export default function Employees() {
             {[1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className="grid grid-cols-[2rem_1.5fr_1.5fr_1fr_5rem] items-center px-6 py-4 animate-pulse"
+                className="grid grid-cols-[2rem_1.5fr_2fr_1fr_2fr_100px_90px_80px] items-center px-6 py-4 animate-pulse"
               >
                 <span className="h-2 w-2 rounded-full bg-zinc-700" />
                 <span className="h-3 w-32 rounded bg-zinc-700" />
@@ -454,7 +456,7 @@ export default function Employees() {
                     setEditModal(true);
                   }}
                   key={employee.id}
-                  className="grid grid-cols-[2rem_1.5fr_1.5fr_1fr_5rem_1fr] items-center px-6 py-4 hover:bg-zinc-800/40 transition-colors duration-150 cursor-pointer"
+                  className="grid grid-cols-[2rem_1.5fr_2fr_1fr_2fr_100px_90px_80px] items-center px-6 py-4 hover:bg-zinc-800/40 transition-colors duration-150 cursor-pointer"
                 >
                   <span
                     className={`h-2 w-2 rounded-full ${
@@ -487,6 +489,13 @@ export default function Employees() {
                           </span>
                         ))
                       : "—"}
+                  </span>
+                  <span className="text-sm text-zinc-400">
+                    {employee.country ?? "—"}
+                  </span>
+
+                  <span className="text-sm text-zinc-400">
+                    {employee.gender ?? "—"}
                   </span>
                   <span className="text-right text-xs">
                     <span

@@ -17,21 +17,23 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="h-screen max-w-[10%] flex flex-col gap-5 p-4 text-white/70">
-      <div>
-        <h1 className="text-4xl text-white font-rye">Rhon Studios OS</h1>
-      </div>
-      <nav className="flex flex-col gap-4">
-        <div className="w-full border border-dotted"></div>
+    <aside className="w-full md:w-64 shrink-0 bg-black text-white/70 p-4 flex flex-col">
+      <h1 className="text-2xl md:text-3xl font-rye text-white mb-6">
+        Rhon Studios OS
+      </h1>
+      <div className="border border-dashed mb-2"></div>
+
+      <nav className="flex md:flex-col gap-2 overflow-x-auto md:overflow-visible">
         {items.map((item) => {
           const isActive = item.key === activeKey;
+
           return (
             <button
               key={item.key}
               onClick={() => setActiveKey(item.key)}
-              className={`w-full text-left rounded-xl transition-colors duration-200 ease-in p-2 ${
+              className={`whitespace-nowrap rounded-xl p-2 text-left transition-colors ${
                 isActive
-                  ? "bg-gray-500 text-white cursor-default"
+                  ? "bg-gray-500 text-white"
                   : "hover:bg-blue-500 hover:text-white cursor-pointer"
               }`}
             >
@@ -40,9 +42,10 @@ export default function Sidebar() {
           );
         })}
       </nav>
+
       <button
         onClick={handleLogout}
-        className="mt-auto rounded-xl hover:bg-red-500 hover:text-white transition-colors duration-200 ease-in cursor-pointer p-2 mb-10"
+        className="mt-4 md:mt-auto rounded-xl p-2 hover:bg-red-500 hover:text-white transition-colors cursor-pointer"
       >
         Log Out
       </button>

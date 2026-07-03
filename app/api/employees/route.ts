@@ -12,6 +12,9 @@ export async function GET() {
       r.id AS role_id,
       r.name AS role_name,
       r.is_admin,
+      e.country,
+      e.timezone,
+      e.gender,
       COALESCE(
         ARRAY_AGG(DISTINCT p.id ORDER BY p.id)
         FILTER (WHERE p.id IS NOT NULL),

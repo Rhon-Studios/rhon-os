@@ -16,9 +16,10 @@ export default function DashboardPage() {
       : items.find((item) => item.key === activeKey)?.component;
 
   return (
-    <div className="flex h-screen bg-black">
+    <div className="flex flex-col md:flex-row h-screen bg-black">
       <Sidebar />
-      <main className="h-[90%] w-[90%] m-10 bg-background rounded-xl">
+
+      <main className="flex-1 m-2 md:m-6 lg:m-10 rounded-xl bg-background overflow-auto">
         {activeKey === "project" ? (
           <ProjectDetails projectId={projectId!} />
         ) : (

@@ -22,6 +22,9 @@ export function EditEmployeeModal({
     email: "",
     active: true,
     role_id: 0,
+    country: "",
+    timezone: "",
+    gender: "",
     projectIds: [] as number[],
   });
   const [projects, setProjects] = useState<Project[]>([]);
@@ -41,6 +44,9 @@ export function EditEmployeeModal({
       active: employee.active,
       role_id: employee.role_id,
       projectIds: employee.project_ids ?? [],
+      country: employee.country ?? "",
+      timezone: employee.timezone ?? "",
+      gender: employee.gender ?? "",
     });
   }, [employee]);
 
@@ -113,6 +119,36 @@ export function EditEmployeeModal({
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-zinc-500">Country</label>
+            <input
+              className="w-full rounded-xl bg-zinc-800 px-4 py-2 text-zinc-200"
+              value={form.country}
+              onChange={(e) => setForm({ ...form, country: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-zinc-500">Timezone</label>
+            <input
+              className="w-full rounded-xl bg-zinc-800 px-4 py-2 text-zinc-200"
+              value={form.timezone}
+              onChange={(e) => setForm({ ...form, timezone: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-zinc-500">Gender</label>
+            <select
+              className="w-full rounded-xl bg-zinc-800 px-4 py-2 text-zinc-200"
+              value={form.gender}
+              onChange={(e) => setForm({ ...form, gender: e.target.value })}
+            >
+              <option value="">Select gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+              <option value="na">Prefer not to say</option>
+            </select>
           </div>
 
           <div>

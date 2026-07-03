@@ -21,6 +21,9 @@ export interface Employee {
   is_admin?: boolean;
   projects?: string[];
   project_ids?: number[];
+  country: string | null;
+  timezone: string | null;
+  gender: string | null;
 }
 
 export interface Project {
