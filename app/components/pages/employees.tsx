@@ -271,7 +271,7 @@ export default function Employees() {
         )}
 
         {!error && !loading && employees.length > 0 && (
-          <ul className="divide-y divide-zinc-800/60">
+          <ul className="divide-y divide-zinc-800/60 max-h-[90%] overflow-y-auto">
             {employees.map((employee) => (
               <li
                 key={employee.id}
