@@ -45,12 +45,8 @@ export async function GET(req: NextRequest) {
       const tasks = await sql`
         SELECT
           t.*,
-          a.name AS assigned_to_name,
-          d.name AS done_by_name,
           ro.name AS role_name
         FROM task t
-        LEFT JOIN employee a ON a.id = t.assigned_to
-        LEFT JOIN employee d ON d.id = t.done_by
         LEFT JOIN roles ro ON ro.id = t.role_id
         WHERE t.project_id = ${projectId}
         ORDER BY t.id
@@ -60,10 +56,12 @@ export async function GET(req: NextRequest) {
         SELECT
           s.*,
           a.name AS assigned_to_name,
-          d.name AS done_by_name
+          d.name AS done_by_name,
+          m.name AS meant_to_assign_name
         FROM subtasks s
         LEFT JOIN employee a ON a.id = s.assigned_to
         LEFT JOIN employee d ON d.id = s.done_by
+        LEFT JOIN employee m ON m.id = s.meant_to_assign
         WHERE s.task_id IN (
           SELECT id
           FROM task
@@ -143,10 +141,12 @@ export async function GET(req: NextRequest) {
         SELECT
           s.*,
           a.name AS assigned_to_name,
-          d.name AS done_by_name
+          d.name AS done_by_name,
+          m.name AS meant_to_assign_name
         FROM subtasks s
         LEFT JOIN employee a ON a.id = s.assigned_to
         LEFT JOIN employee d ON d.id = s.done_by
+        LEFT JOIN employee m ON m.id = s.meant_to_assign
         WHERE s.assigned_to = ${employeeId}
         ORDER BY s.id
       `;
@@ -161,18 +161,12 @@ export async function GET(req: NextRequest) {
         FROM task t
         LEFT JOIN roles ro ON ro.id = t.role_id
         LEFT JOIN projects p ON p.id = t.project_id
-        WHERE t.assigned_to = ${employeeId}
-           OR t.id = ANY(${subtaskTaskIds})
+        WHERE t.id = ANY(${subtaskTaskIds})
         ORDER BY t.id
       `;
 
-      const tasksWithFlag = tasks.map((task) => ({
-        ...task,
-        is_assigned_to_you: task.assigned_to === employeeId,
-      }));
-
       return NextResponse.json({
-        tasks: tasksWithFlag,
+        tasks,
         subtasks,
         isAdmin,
       });
@@ -201,8 +195,8 @@ export async function POST(req: Request) {
     const sql = neon(process.env.DATABASE_URL!);
 
     const result = await sql`
-      INSERT INTO task (project_id, name, priority, state, workload, assigned_to, notes)
-      VALUES (${projectId}, ${name}, ${priority}, ${state}, ${workload}, NULL, NULL)
+      INSERT INTO task (project_id, name, priority, state, workload, notes)
+      VALUES (${projectId}, ${name}, ${priority}, ${state}, ${workload}, NULL)
       RETURNING *;
     `;
 

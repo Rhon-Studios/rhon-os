@@ -28,7 +28,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col items-center justify-center m-auto gap-10 bg-black/60 p-5 rounded-xl">
-      <h1 className="text-3xl font-bold">Rhon studios OS</h1>
+      <h1 className="text-4xl font-bold font-rye">Rhon studios OS</h1>
 
       <div className="flex justify-around w-full">
         <p>Admin</p>

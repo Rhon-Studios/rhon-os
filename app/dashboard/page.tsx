@@ -10,18 +10,20 @@ export default function DashboardPage() {
   const { activeKey, projectId } = useActiveView();
   const isAdmin = user?.role === "admin";
   const items = isAdmin ? admin_sidebar : employee_sidebar;
-  let ActiveComponent: React.FC | undefined;
-  if (activeKey === "project") {
-    ActiveComponent = () => <ProjectDetails projectId={projectId!} />;
-  } else {
-    ActiveComponent = items.find((item) => item.key === activeKey)?.component;
-  }
+  const ActiveComponent =
+    activeKey === "project"
+      ? undefined
+      : items.find((item) => item.key === activeKey)?.component;
 
   return (
     <div className="flex h-screen bg-black">
       <Sidebar />
       <main className="h-[90%] w-[90%] m-10 bg-background rounded-xl">
-        {ActiveComponent && <ActiveComponent />}
+        {activeKey === "project" ? (
+          <ProjectDetails projectId={projectId!} />
+        ) : (
+          ActiveComponent && <ActiveComponent />
+        )}
       </main>
     </div>
   );

@@ -42,7 +42,7 @@ export interface Setting {
 }
 
 export interface Task {
-  id?: number;
+  id: number;
   project_id: number;
   name: string;
   priority: Priority;
@@ -59,6 +59,9 @@ export interface Task {
   share?: number | null;
   role_name?: string | null;
   role_id?: number | null;
+  project_name?: string | null;
+  is_assigned_to_you?: boolean;
+  meant_to_assign?: number | null;
 }
 
 export interface Subtask {
@@ -66,6 +69,7 @@ export interface Subtask {
   task_id: number;
   name: string;
   assigned_to: number | null;
+  meant_to_assign_name: string | null;
   done_by: number | null;
   priority: Priority;
   state: TaskState;
@@ -77,4 +81,5 @@ export interface Subtask {
   assigned_to_name?: string | null;
   done_by_name?: string | null;
   share: number;
+  meant_to_assign?: number | null;
 }

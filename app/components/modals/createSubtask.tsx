@@ -52,7 +52,7 @@ export function CreateSubtaskModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/60">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
       <div className="w-[500px] space-y-3 rounded-xl bg-zinc-900 p-6">
         <input
           type="text"

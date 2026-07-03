@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
 
   if (rows.length === 0) {
     return NextResponse.json(
-      { error: "Empleado no encontrado" },
+      { error: "Error while logging in" },
       { status: 401 },
     );
   }
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
   if (employee.is_admin && password) {
     if (password !== process.env.ADMIN_PASSWORD) {
       return NextResponse.json(
-        { error: "Contraseña incorrecta" },
+        { error: "Error while logging in" },
         { status: 401 },
       );
     }

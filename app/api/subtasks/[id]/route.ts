@@ -6,14 +6,21 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const { name, priority, state, workload, assigned_to, notes } =
-    await req.json();
+  const {
+    name,
+    priority,
+    state,
+    workload,
+    assigned_to,
+    meant_to_assign,
+    notes,
+  } = await req.json();
 
   try {
     const sql = neon(process.env.DATABASE_URL!);
     const result = await sql`
       UPDATE subtasks
-      SET name = ${name}, priority = ${priority}, state = ${state}, workload = ${workload}, assigned_to = ${assigned_to}, notes = ${notes}
+      SET name = ${name}, priority = ${priority}, state = ${state}, workload = ${workload}, assigned_to = ${assigned_to}, meant_to_assign = ${meant_to_assign}, notes = ${notes}
       WHERE id = ${id}
       RETURNING *;
     `;

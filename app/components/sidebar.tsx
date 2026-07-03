@@ -19,7 +19,7 @@ export default function Sidebar() {
   return (
     <aside className="h-screen max-w-[10%] flex flex-col gap-5 p-4 text-white/70">
       <div>
-        <h1 className="text-4xl text-white">Rhon Studios OS</h1>
+        <h1 className="text-4xl text-white font-rye">Rhon Studios OS</h1>
       </div>
       <nav className="flex flex-col gap-4">
         <div className="w-full border border-dotted"></div>
