@@ -55,11 +55,11 @@ export default function Employees() {
       setError(data.error || "Error al agregar empleado");
       return;
     }
-    const data = await res.json();
-    setEmployees(data);
+    await getEmployees();
     setName("");
     setEmail("");
     setRoleId(0);
+    setCreateModal(false);
     getEmployees();
   }, [name, email, roleId]);
 

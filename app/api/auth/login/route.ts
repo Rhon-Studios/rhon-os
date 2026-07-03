@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  if (!employee.active) {
+  if (employee.active === false) {
     return NextResponse.json(
       { error: "Error while logging in" },
       { status: 401 },

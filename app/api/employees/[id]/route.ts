@@ -47,3 +47,18 @@ export async function PUT(
 
   return NextResponse.json({ success: true });
 }
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  const client = neon(process.env.DATABASE_URL!);
+
+  await client`
+    DELETE FROM employee
+    WHERE id = ${id}
+  `;
+
+  return NextResponse.json({ success: true });
+}
