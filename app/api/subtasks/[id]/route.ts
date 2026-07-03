@@ -13,6 +13,7 @@ export async function PUT(
     workload,
     assigned_to,
     meant_to_assign,
+    done_by,
     notes,
   } = await req.json();
 
@@ -20,7 +21,7 @@ export async function PUT(
     const sql = neon(process.env.DATABASE_URL!);
     const result = await sql`
       UPDATE subtasks
-      SET name = ${name}, priority = ${priority}, state = ${state}, workload = ${workload}, assigned_to = ${assigned_to}, meant_to_assign = ${meant_to_assign}, notes = ${notes}
+      SET name = ${name}, priority = ${priority}, state = ${state}, workload = ${workload}, assigned_to = ${assigned_to}, meant_to_assign = ${meant_to_assign}, done_by = ${done_by}, notes = ${notes}
       WHERE id = ${id}
       RETURNING *;
     `;

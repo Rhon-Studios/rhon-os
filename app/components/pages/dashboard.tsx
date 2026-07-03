@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);
   const [fetching, setFetching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [myRevshare, setMyRevshare] = useState(0);
 
   const loading = userLoading || (!!user && fetching);
 
@@ -31,17 +32,29 @@ export default function Dashboard() {
       setError(null);
 
       try {
-        const res = await fetch(`/api/tasks?myTasksOnly=${true}`);
+        const [tasksRes, revshareRes] = await Promise.all([
+          fetch("/api/tasks?myTasksOnly=true"),
+          fetch("/api/revshare"),
+        ]);
 
-        if (!res.ok) {
-          const data = await res.json();
+        if (!tasksRes.ok) {
+          const data = await tasksRes.json();
           setError(data.error || "Error loading tasks");
           return;
         }
 
-        const data = await res.json();
-        setTasks(data.tasks);
-        setSubtasks(data.subtasks);
+        if (!revshareRes.ok) {
+          const data = await revshareRes.json();
+          setError(data.error || "Error loading revshare");
+          return;
+        }
+
+        const tasksData = await tasksRes.json();
+        const revshareData = await revshareRes.json();
+
+        setTasks(tasksData.tasks);
+        setSubtasks(tasksData.subtasks);
+        setMyRevshare(revshareData.myRevshare);
       } finally {
         setFetching(false);
       }
@@ -95,6 +108,9 @@ export default function Dashboard() {
         <span>/</span>
         <span className="text-zinc-300">Dashboard</span>
       </div>
+      <p className="text-3xl font-semibold text-emerald-400">
+        {myRevshare.toFixed(2)}%
+      </p>
 
       <h1 className="text-3xl font-semibold text-white mt-3 tracking-tight">
         Welcome back, {user?.name}

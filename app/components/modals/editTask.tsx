@@ -172,29 +172,6 @@ export function EditTaskModal({
           </div>
 
           <div>
-            <label className="mb-1 block text-xs text-zinc-500">
-              Assigned to
-            </label>
-            <select
-              value={editTask.assigned_to ?? ""}
-              onChange={(e) =>
-                setEditTask({
-                  ...editTask,
-                  assigned_to: e.target.value ? Number(e.target.value) : null,
-                })
-              }
-              className="w-full rounded-xl bg-zinc-800 px-4 py-2 text-zinc-200"
-            >
-              <option value="">Unassigned</option>
-              {employees.map((emp) => (
-                <option key={emp.id} value={emp.id}>
-                  {emp.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
             <label className="mb-1 block text-xs text-zinc-500">Notes</label>
             <textarea
               placeholder="Notes"

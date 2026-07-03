@@ -8,6 +8,8 @@ export const admin_sidebar = [
   { key: "dashboard", label: "Dashboard", component: Dashboard },
   { key: "projects", label: "Projects", component: Projects },
   { key: "employees", label: "Employees", component: Employees },
+  { key: "my-projects", label: "My Projects", component: MyProjects },
+  { key: "my-tasks", label: "My Tasks", component: MyTasks },
 ];
 
 export const employee_sidebar = [

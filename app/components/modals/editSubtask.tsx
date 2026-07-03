@@ -29,6 +29,7 @@ export function EditSubtaskModal({
     workload: string;
     assigned_to: number | null;
     meant_to_assign: number | null;
+    done_by: number | null;
     notes: string;
   }>(() => ({
     name: subtask?.name ?? "",
@@ -37,6 +38,7 @@ export function EditSubtaskModal({
     workload: subtask?.workload ?? "medium",
     assigned_to: subtask?.assigned_to ?? null,
     meant_to_assign: subtask?.meant_to_assign ?? null,
+    done_by: subtask?.done_by ?? null,
     notes: subtask?.notes ?? "",
   }));
 
@@ -191,7 +193,26 @@ export function EditSubtaskModal({
               ))}
             </select>
           </div>
-
+          <div>
+            <label className="mb-1 block text-xs text-zinc-500">Done by</label>
+            <select
+              value={editSubtask.done_by ?? ""}
+              onChange={(e) =>
+                setEditSubtask({
+                  ...editSubtask,
+                  done_by: e.target.value ? Number(e.target.value) : null,
+                })
+              }
+              className="w-full rounded-xl bg-zinc-800 px-4 py-2 text-zinc-200"
+            >
+              <option value="">Unassigned</option>
+              {employees.map((emp) => (
+                <option key={emp.id} value={emp.id}>
+                  {emp.name}
+                </option>
+              ))}
+            </select>
+          </div>
           <div>
             <label className="mb-1 block text-xs text-zinc-500">Notes</label>
             <textarea
