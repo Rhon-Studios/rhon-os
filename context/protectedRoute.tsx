@@ -1,23 +1,27 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { useUser } from "./userContext"
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useUser } from "./userContext";
 
-export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { userId } = useUser()
-  const [loaded, setLoaded] = useState(false)
-  const router = useRouter()
+export default function ProtectedRoute({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { userId } = useUser();
+  const [loaded, setLoaded] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    setLoaded(true)
-  }, [])
+    setLoaded(true);
+  }, []);
 
   useEffect(() => {
-    if (loaded && !userId) router.push("/admin")
-  }, [loaded, userId, router])
+    if (loaded && !userId) router.push("/admin");
+  }, [loaded, userId, router]);
 
-  if (!loaded || !userId) return null
+  if (!loaded || !userId) return null;
 
-  return <>{children}</>
+  return <>{children}</>;
 }

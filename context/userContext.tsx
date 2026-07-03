@@ -4,6 +4,8 @@ import { createContext, useContext, useState, useEffect } from "react";
 type User = {
   userId: number;
   email: string;
+  role_name?: string;
+  id?: number;
   name: string;
   role: "admin" | "viewer";
 } | null;
@@ -11,6 +13,7 @@ type User = {
 type UserContextType = {
   user: User;
   loading: boolean;
+  userId?: number;
   logOut: () => Promise<void>;
   refresh: () => Promise<void>;
 };
