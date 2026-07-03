@@ -6,22 +6,14 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const {
-    projectId,
-    name,
-    priority,
-    state,
-    workload,
-    assigned_to,
-    notes,
-    role_id,
-  } = await req.json();
+  const { projectId, name, priority, state, workload, notes, role_id } =
+    await req.json();
 
   try {
     const sql = neon(process.env.DATABASE_URL!);
     const result = await sql`
       UPDATE task
-      SET project_id = ${projectId}, name = ${name}, priority = ${priority}, state = ${state}, workload = ${workload}, assigned_to = ${assigned_to}, notes = ${notes}, role_id = ${role_id}
+      SET project_id = ${projectId}, name = ${name}, priority = ${priority}, state = ${state}, workload = ${workload}, notes = ${notes}, role_id = ${role_id}
       WHERE id = ${id}
       RETURNING *;
     `;
