@@ -55,10 +55,26 @@ export async function DELETE(
   const { id } = await params;
   const client = neon(process.env.DATABASE_URL!);
 
-  await client`
-    DELETE FROM employee
-    WHERE id = ${id}
-  `;
+  await client.transaction([
+    client`
+      UPDATE subtasks
+      SET assigned_to = NULL
+      WHERE assigned_to = ${id}
+    `,
+    client`
+      UPDATE subtasks
+      SET meant_to_assign = NULL
+      WHERE meant_to_assign = ${id}
+    `,
+    client`
+      DELETE FROM project_employee
+      WHERE employee_id = ${id}
+    `,
+    client`
+      DELETE FROM employee
+      WHERE id = ${id}
+    `,
+  ]);
 
   return NextResponse.json({ success: true });
 }
