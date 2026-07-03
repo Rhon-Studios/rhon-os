@@ -24,17 +24,24 @@ export async function POST(req: NextRequest) {
   }
 
   const employee = rows[0];
-  let role: "admin" | "viewer" = "viewer";
 
-  if (employee.is_admin && password) {
+  if (employee.is_admin) {
+    if (!password) {
+      return NextResponse.json(
+        { error: "Error while logging in" },
+        { status: 401 },
+      );
+    }
+
     if (password !== process.env.ADMIN_PASSWORD) {
       return NextResponse.json(
         { error: "Error while logging in" },
         { status: 401 },
       );
     }
-    role = "admin";
   }
+
+  const role: "admin" | "viewer" = employee.is_admin ? "admin" : "viewer";
 
   const token = await createSessionToken({
     userId: employee.id,

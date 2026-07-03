@@ -464,6 +464,9 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
                               <p className="text-sm text-zinc-100 font-medium truncate">
+                                <span className="text-zinc-600">
+                                  #P0{subtask.id}
+                                </span>{" "}
                                 {subtask.name}
                               </p>
 

@@ -1,5 +1,6 @@
 "use client";
 import { Employee, Role } from "@/types/TypesDB";
+import { User, X } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 
 export default function Employees() {
@@ -126,50 +127,91 @@ export default function Employees() {
         </div>
       </div>
       {createModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/60">
-          <div className="bg-zinc-900 rounded-2xl p-6 gap-3 flex flex-col w-[30%]">
-            <input
-              type="text"
-              name="name"
-              id="name"
-              placeholder="Name"
-              className="w-full"
-              onChange={(e) => setName(e.target.value)}
-            />
-            <input
-              type="email"
-              name="email"
-              id="email"
-              placeholder="Email"
-              className="w-full mt-2"
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <select
-              name="roleId"
-              id="roleId"
-              className="w-full mt-2"
-              onChange={(e) => setRoleId(Number(e.target.value))}
-            >
-              <option disabled value="0" selected>
-                Select Role
-              </option>
-              {roles.map((role) => (
-                <option key={role.id} value={role.id}>
-                  {role.name}
-                </option>
-              ))}
-            </select>
-            <div className="flex gap-4 mt-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="w-[500px] rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+            <div className="flex items-start justify-between mb-5">
+              <div className="flex items-center gap-2.5">
+                <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-2">
+                  <User className="h-4 w-4 text-emerald-400" />
+                </div>
+                <div>
+                  <h2 className="text-white font-semibold text-[15px]">
+                    New Employee
+                  </h2>
+                  <p className="text-zinc-500 text-xs mt-0.5">
+                    Create a new employee account.
+                  </p>
+                </div>
+              </div>
+
               <button
                 onClick={() => setCreateModal(false)}
-                className="w-full cursor-pointer bg-zinc-800 text-white rounded-xl hover:bg-zinc-700"
+                className="rounded-lg p-1.5 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 cursor-pointer transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs text-zinc-500">Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  id="name"
+                  placeholder="Employee name"
+                  className="w-full rounded-xl bg-zinc-800 px-4 py-2 text-zinc-200"
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs text-zinc-500">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  id="email"
+                  placeholder="employee@email.com"
+                  className="w-full rounded-xl bg-zinc-800 px-4 py-2 text-zinc-200"
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs text-zinc-500">Role</label>
+                <select
+                  name="roleId"
+                  id="roleId"
+                  className="w-full rounded-xl bg-zinc-800 px-4 py-2 text-zinc-200"
+                  defaultValue="0"
+                  onChange={(e) => setRoleId(Number(e.target.value))}
+                >
+                  <option disabled value="0">
+                    Select role
+                  </option>
+                  {roles.map((role) => (
+                    <option key={role.id} value={role.id}>
+                      {role.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 mt-6">
+              <button
+                onClick={() => setCreateModal(false)}
+                className="rounded-xl bg-zinc-700 px-4 py-2 text-sm font-medium cursor-pointer hover:bg-zinc-600 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddEmployee}
-                className="w-full cursor-pointer bg-green-500 text-white rounded-xl hover:bg-green-700"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium cursor-pointer hover:bg-emerald-500 transition-colors"
               >
+                <User className="h-4 w-4" />
                 Add Employee
               </button>
             </div>
