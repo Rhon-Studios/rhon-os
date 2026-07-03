@@ -1,7 +1,7 @@
 "use client";
 import { Employee, Role } from "@/types/TypesDB";
-import { User, X } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { User, X, Filter } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { EditEmployeeModal } from "../modals/editEmployee";
 
 export default function Employees() {
@@ -18,6 +18,10 @@ export default function Employees() {
 
   const [editModal, setEditModal] = useState(false);
   const [employee, setEmployee] = useState<Employee | null>(null);
+
+  // Filtros
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [projectFilter, setProjectFilter] = useState<string>("all");
 
   const getEmployees = useCallback(async () => {
     setLoading(true);
@@ -112,7 +116,46 @@ export default function Employees() {
     tonkori: "bg-pink-500/10 text-pink-400 border-pink-500/20",
     tinycare: "bg-zinc-200/10 text-zinc-100 border-zinc-400/30",
     "the observer": "bg-blue-500/10 text-blue-400 border-blue-500/20",
+    "rhon studios": "bg-black/20 text-white border-zinc-400/30",
   };
+
+  // Roles que realmente tienen empleados
+  const rolesInUse = useMemo(() => {
+    const names = new Set(
+      employees.map((e) => e.role_name).filter((r): r is string => !!r),
+    );
+    return roles.filter((r) => names.has(r.name));
+  }, [employees, roles]);
+
+  // Proyectos que realmente tienen empleados asignados
+  const projectsInUse = useMemo(() => {
+    const names = new Set<string>();
+    employees.forEach((e) => {
+      e.projects?.forEach((p) => names.add(p));
+    });
+    return Array.from(names).sort();
+  }, [employees]);
+
+  const filteredEmployees = useMemo(() => {
+    return employees.filter((e) => {
+      const roleMatch =
+        roleFilter === "all"
+          ? true
+          : roleFilter === "none"
+            ? !e.role_name
+            : e.role_name === roleFilter;
+
+      const projectMatch =
+        projectFilter === "all"
+          ? true
+          : projectFilter === "none"
+            ? !e.projects?.length
+            : e.projects?.includes(projectFilter);
+
+      return roleMatch && projectMatch;
+    });
+  }, [employees, roleFilter, projectFilter]);
+
   return (
     <div className="h-full flex flex-col text-zinc-200 p-8">
       <div className="flex items-center justify-between mb-1">
@@ -233,10 +276,119 @@ export default function Employees() {
       <p className="text-zinc-500 text-sm mt-1">
         {loading
           ? "Loading your team…"
-          : `${activeCount} active of ${employees.length} total`}
+          : `${filteredEmployees.length} of ${employees.length} shown · ${activeCount} active`}
       </p>
 
-      <div className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900/60 overflow-hidden">
+      {/* Filtro por Role */}
+      {!loading && employees.length > 0 && (
+        <div className="mt-5 flex items-center gap-2 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 text-xs text-zinc-500 mr-1">
+            <Filter className="h-3.5 w-3.5" />
+            Role
+          </span>
+
+          <button
+            onClick={() => setRoleFilter("all")}
+            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+              roleFilter === "all"
+                ? "bg-zinc-200 text-zinc-900 border-zinc-200"
+                : "bg-zinc-800/60 text-zinc-400 border-zinc-700 hover:bg-zinc-700/60"
+            }`}
+          >
+            All
+          </button>
+
+          {rolesInUse.map((r) => (
+            <button
+              key={r.id}
+              onClick={() => setRoleFilter(r.name)}
+              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer capitalize ${
+                roleFilter === r.name
+                  ? "bg-zinc-200 text-zinc-900 border-zinc-200"
+                  : "bg-zinc-800/60 text-zinc-400 border-zinc-700 hover:bg-zinc-700/60"
+              }`}
+            >
+              {r.name}
+            </button>
+          ))}
+
+          {employees.some((e) => !e.role_name) && (
+            <button
+              onClick={() => setRoleFilter("none")}
+              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+                roleFilter === "none"
+                  ? "bg-zinc-200 text-zinc-900 border-zinc-200"
+                  : "bg-zinc-800/60 text-zinc-400 border-zinc-700 hover:bg-zinc-700/60"
+              }`}
+            >
+              No role
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Filtro por Project */}
+      {!loading && employees.length > 0 && projectsInUse.length > 0 && (
+        <div className="mt-3 flex items-center gap-2 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 text-xs text-zinc-500 mr-1">
+            <Filter className="h-3.5 w-3.5" />
+            Project
+          </span>
+
+          <button
+            onClick={() => setProjectFilter("all")}
+            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+              projectFilter === "all"
+                ? "bg-zinc-200 text-zinc-900 border-zinc-200"
+                : "bg-zinc-800/60 text-zinc-400 border-zinc-700 hover:bg-zinc-700/60"
+            }`}
+          >
+            All
+          </button>
+
+          {projectsInUse.map((p) => (
+            <button
+              key={p}
+              onClick={() => setProjectFilter(p)}
+              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer capitalize ${
+                projectFilter === p
+                  ? "bg-zinc-200 text-zinc-900 border-zinc-200"
+                  : `${projectStyles[p.toLowerCase()] ?? "bg-zinc-800/60 text-zinc-400 border-zinc-700"} hover:brightness-125`
+              }`}
+            >
+              {p}
+            </button>
+          ))}
+
+          {employees.some((e) => !e.projects?.length) && (
+            <button
+              onClick={() => setProjectFilter("none")}
+              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+                projectFilter === "none"
+                  ? "bg-zinc-200 text-zinc-900 border-zinc-200"
+                  : "bg-zinc-800/60 text-zinc-400 border-zinc-700 hover:bg-zinc-700/60"
+              }`}
+            >
+              No project
+            </button>
+          )}
+        </div>
+      )}
+
+      {(roleFilter !== "all" || projectFilter !== "all") && (
+        <button
+          onClick={() => {
+            setRoleFilter("all");
+            setProjectFilter("all");
+          }}
+          className="mt-3 inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 cursor-pointer w-fit"
+        >
+          <X className="h-3.5 w-3.5" />
+          Clear filters
+        </button>
+      )}
+
+      <div className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900/60 overflow-hidden">
         <div className="px-6 py-4 border-b border-zinc-800">
           <h2 className="text-base font-medium text-white">All employees</h2>
           <p className="text-zinc-500 text-xs mt-0.5">
@@ -281,10 +433,21 @@ export default function Employees() {
           </div>
         )}
 
-        {!error && !loading && employees.length > 0 && (
+        {!error &&
+          !loading &&
+          employees.length > 0 &&
+          filteredEmployees.length === 0 && (
+            <div className="px-6 py-12 text-center">
+              <p className="text-zinc-400 text-sm">
+                No employees match these filters.
+              </p>
+            </div>
+          )}
+
+        {!error && !loading && filteredEmployees.length > 0 && (
           <div className="border border-zinc-800 bg-zinc-900/60 overflow-hidden flex flex-col h-full">
             <ul className="flex-1 overflow-y-auto divide-y divide-zinc-800/60 pb-30">
-              {employees.map((employee) => (
+              {filteredEmployees.map((employee) => (
                 <li
                   onClick={() => {
                     setEmployee(employee);
