@@ -15,10 +15,12 @@ export interface Employee {
   id: number;
   name: string;
   email: string;
-  role_id: number | null;
+  role_id: number;
   active: boolean;
   role_name?: string;
   is_admin?: boolean;
+  projects?: string[];
+  project_ids?: number[];
 }
 
 export interface Project {

@@ -2,6 +2,7 @@
 import { Employee, Role } from "@/types/TypesDB";
 import { User, X } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
+import { EditEmployeeModal } from "../modals/editEmployee";
 
 export default function Employees() {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -14,6 +15,9 @@ export default function Employees() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [roleId, setRoleId] = useState(0);
+
+  const [editModal, setEditModal] = useState(false);
+  const [employee, setEmployee] = useState<Employee | null>(null);
 
   const getEmployees = useCallback(async () => {
     setLoading(true);
@@ -103,6 +107,12 @@ export default function Employees() {
     ? employees.filter((e) => e.active).length
     : 0;
 
+  const projectStyles: Record<string, string> = {
+    afterlight: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+    tonkori: "bg-pink-500/10 text-pink-400 border-pink-500/20",
+    tinycare: "bg-zinc-200/10 text-zinc-100 border-zinc-400/30",
+    "the observer": "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  };
   return (
     <div className="h-full flex flex-col text-zinc-200 p-8">
       <div className="flex items-center justify-between mb-1">
@@ -234,11 +244,12 @@ export default function Employees() {
           </p>
         </div>
 
-        <div className="grid grid-cols-[2rem_1.5fr_1.5fr_1fr_5rem] px-6 py-3 text-xs uppercase tracking-wide text-zinc-500 border-b border-zinc-800/80">
+        <div className="grid grid-cols-[2rem_1.5fr_1.5fr_1fr_5rem_1fr] px-6 py-3 text-xs uppercase tracking-wide text-zinc-500 border-b border-zinc-800/80">
           <span></span>
           <span>Name</span>
           <span>Email</span>
           <span>Role</span>
+          <span>Projects</span>
           <span className="text-right">Status</span>
         </div>
 
@@ -271,39 +282,72 @@ export default function Employees() {
         )}
 
         {!error && !loading && employees.length > 0 && (
-          <ul className="divide-y divide-zinc-800/60 max-h-[90%] overflow-y-auto">
-            {employees.map((employee) => (
-              <li
-                key={employee.id}
-                className="grid grid-cols-[2rem_1.5fr_1.5fr_1fr_5rem] items-center px-6 py-4 hover:bg-zinc-800/40 transition-colors duration-150 cursor-pointer"
-              >
-                <span
-                  className={`h-2 w-2 rounded-full ${
-                    employee.active ? "bg-emerald-400" : "bg-zinc-600"
-                  }`}
-                />
-                <span className="text-sm text-zinc-100">{employee.name}</span>
-                <span className="text-sm text-zinc-500">{employee.email}</span>
-                <span className="text-sm text-zinc-400 flex items-center gap-1.5">
-                  {employee.role_name ?? "—"}
-                  {employee.is_admin && (
-                    <span className="text-[10px] uppercase tracking-wide bg-zinc-700 text-zinc-200 px-1.5 py-0.5 rounded-md">
-                      Admin
-                    </span>
-                  )}
-                </span>
-                <span className="text-right text-xs">
+          <div className="border border-zinc-800 bg-zinc-900/60 overflow-hidden flex flex-col h-full">
+            <ul className="flex-1 overflow-y-auto divide-y divide-zinc-800/60 pb-30">
+              {employees.map((employee) => (
+                <li
+                  onClick={() => {
+                    setEmployee(employee);
+                    setEditModal(true);
+                  }}
+                  key={employee.id}
+                  className="grid grid-cols-[2rem_1.5fr_1.5fr_1fr_5rem_1fr] items-center px-6 py-4 hover:bg-zinc-800/40 transition-colors duration-150 cursor-pointer"
+                >
                   <span
-                    className={
-                      employee.active ? "text-emerald-400" : "text-zinc-500"
-                    }
-                  >
-                    {employee.active ? "Active" : "Inactive"}
+                    className={`h-2 w-2 rounded-full ${
+                      employee.active ? "bg-emerald-400" : "bg-zinc-600"
+                    }`}
+                  />
+                  <span className="text-sm text-zinc-100">{employee.name}</span>
+                  <span className="text-sm text-zinc-500">
+                    {employee.email}
                   </span>
-                </span>
-              </li>
-            ))}
-          </ul>
+                  <span className="text-sm text-zinc-400 flex items-center gap-1.5">
+                    {employee.role_name ?? "—"}
+                    {employee.is_admin && (
+                      <span className="text-[10px] uppercase tracking-wide bg-zinc-700 text-zinc-200 px-1.5 py-0.5 rounded-md">
+                        Admin
+                      </span>
+                    )}
+                  </span>
+                  <span className="flex flex-wrap justify-center gap-1">
+                    {employee.projects?.length
+                      ? employee.projects.map((project: string) => (
+                          <span
+                            key={project}
+                            className={`px-2 py-0.5 rounded-md border text-[10px] font-medium ${
+                              projectStyles[project.toLowerCase()] ??
+                              "bg-zinc-700 text-zinc-200 border-zinc-600"
+                            }`}
+                          >
+                            {project}
+                          </span>
+                        ))
+                      : "—"}
+                  </span>
+                  <span className="text-right text-xs">
+                    <span
+                      className={
+                        employee.active ? "text-emerald-400" : "text-zinc-500"
+                      }
+                    >
+                      {employee.active ? "Active" : "Inactive"}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {editModal && (
+          <EditEmployeeModal
+            open={editModal}
+            employee={employee}
+            onClose={() => setEditModal(false)}
+            onUpdated={getEmployees}
+            roles={roles}
+          />
         )}
       </div>
     </div>
