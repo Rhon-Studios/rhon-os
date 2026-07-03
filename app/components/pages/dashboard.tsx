@@ -10,11 +10,12 @@ import {
   CheckCircle2,
   ArrowRight,
 } from "lucide-react";
-import Link from "next/link";
+import { useActiveView } from "@/context/activeViewContext";
 
 export default function Dashboard() {
   const { user, loading: userLoading } = useUser();
 
+  const { setActiveKey } = useActiveView();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);
   const [fetching, setFetching] = useState(false);
@@ -103,7 +104,6 @@ export default function Dashboard() {
       </p>
 
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Profile card */}
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 flex flex-col items-center text-center">
           <div className="h-16 w-16 rounded-full bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center text-lg font-semibold text-emerald-400">
             {initials}
@@ -123,7 +123,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Stats */}
         <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5">
             <div className="flex items-center gap-2 text-zinc-500 text-xs">
@@ -157,7 +156,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Recent tasks */}
       <div className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900/60">
         <div className="px-6 py-4 border-b border-zinc-800 flex items-center justify-between">
           <div>
@@ -167,13 +165,13 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <Link
-            href="/my-tasks"
-            className="inline-flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+          <button
+            onClick={() => setActiveKey("my-tasks")}
+            className="inline-flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
           >
             View all
             <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
+          </button>
         </div>
 
         {error && <div className="px-6 py-8 text-sm text-red-400">{error}</div>}
