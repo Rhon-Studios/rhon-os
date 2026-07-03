@@ -41,6 +41,13 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  if (!employee.active) {
+    return NextResponse.json(
+      { error: "Error while logging in" },
+      { status: 401 },
+    );
+  }
+
   const role: "admin" | "viewer" = employee.is_admin ? "admin" : "viewer";
 
   const token = await createSessionToken({
