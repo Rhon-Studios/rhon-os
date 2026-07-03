@@ -60,7 +60,6 @@ export default function Employees() {
     setEmail("");
     setRoleId(0);
     setCreateModal(false);
-    getEmployees();
   }, [name, email, roleId]);
 
   useEffect(() => {
