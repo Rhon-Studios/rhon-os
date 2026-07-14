@@ -3,13 +3,21 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@/context/userContext";
 import { useActiveView } from "@/context/activeViewContext";
 import { admin_sidebar, employee_sidebar } from "@/constants/sidebar";
+import { useProjects } from "../hooks/useAppData";
+import { Project } from "@/types/TypesDB";
 
 export default function Sidebar() {
   const { logOut, user } = useUser();
-  const { activeKey, setActiveKey } = useActiveView();
+  const { activeKey, setActiveKey, setProjectId, projectId } = useActiveView();
   const router = useRouter();
   const isAdmin = user?.role === "admin";
   const items = isAdmin ? admin_sidebar : employee_sidebar;
+
+  
+
+
+    const userId = user?.userId;
+    const { data: projects = [] } = useProjects(userId!);
 
   async function handleLogout() {
     await logOut();
@@ -41,6 +49,27 @@ export default function Sidebar() {
             </button>
           );
         })}
+
+        {projects.map((project: Project) => {
+          const isActive = activeKey === "project" && projectId === project.id;
+          return (
+            <button
+              key={project.id}
+              onClick={() => {
+                setProjectId(project.id);
+                setActiveKey("project");
+              }}
+              className={`whitespace-nowrap rounded-xl p-2 text-left transition-colors ${
+                isActive
+                  ? "bg-gray-500 text-white"
+                  : "hover:bg-blue-500 hover:text-white cursor-pointer"
+              }`}
+            >
+              {project.name}
+            </button>
+          );
+        })}
+
       </nav>
 
       <button

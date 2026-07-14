@@ -1,114 +1,49 @@
 "use client";
 import { Employee, Role } from "@/types/TypesDB";
 import { User, X, Filter } from "lucide-react";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { EditEmployeeModal } from "../modals/editEmployee";
+import { useAddEmployee, useEmployees, useRoles } from "@/app/hooks/useAppData";
 
 export default function Employees() {
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
-
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
   const [createModal, setCreateModal] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [roleId, setRoleId] = useState(0);
+  const [addError, setAddError] = useState<string | null>(null);
 
   const [editModal, setEditModal] = useState(false);
   const [employee, setEmployee] = useState<Employee | null>(null);
 
-  // Filtros
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [projectFilter, setProjectFilter] = useState<string>("all");
 
-  const getEmployees = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/employees");
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Error al cargar empleados");
-        return;
+  const {
+    data: employees = [],
+    isLoading: loading,
+    error: employeesError,
+    refetch,
+  } = useEmployees();
+  const { data: roles = [] } = useRoles();
+  const addEmployee = useAddEmployee();
+
+  const handleAddEmployee = () => {
+    setAddError(null);
+    addEmployee.mutate(
+      { name, email, role_id: roleId } as Employee,
+      {
+        onSuccess: () => {
+          setName("");
+          setEmail("");
+          setRoleId(0);
+          setCreateModal(false);
+        },
+        onError: (err: Error) => setAddError(err.message),
       }
-      const data = await res.json();
-      setEmployees(data);
-    } catch {
-      setError("Error al cargar empleados");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    );
+  };
 
-  const handleAddEmployee = useCallback(async () => {
-    const res = await fetch("/api/employees", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name, email, role_id: roleId }),
-    });
-    if (!res.ok) {
-      const data = await res.json();
-      setError(data.error || "Error al agregar empleado");
-      return;
-    }
-    await getEmployees();
-    setName("");
-    setEmail("");
-    setRoleId(0);
-    setCreateModal(false);
-  }, [name, email, roleId]);
-
-  useEffect(() => {
-    let ignore = false;
-
-    async function load() {
-      try {
-        const res = await fetch("/api/employees");
-        if (!res.ok) {
-          const data = await res.json();
-          if (!ignore) setError(data.error || "Error al cargar empleados");
-          return;
-        }
-        const data = await res.json();
-        if (!ignore) setEmployees(data);
-      } catch {
-        if (!ignore) setError("Error al cargar empleados");
-      } finally {
-        if (!ignore) setLoading(false);
-      }
-    }
-
-    async function load_roles() {
-      try {
-        const res = await fetch("/api/roles");
-        if (!res.ok) {
-          const data = await res.json();
-          if (!ignore) setError(data.error || "Error al cargar roles");
-          return;
-        }
-        const data = await res.json();
-        if (!ignore) setRoles(data);
-      } catch {
-        if (!ignore) setError("Error al cargar roles");
-      } finally {
-        if (!ignore) setLoading(false);
-      }
-    }
-
-    load();
-    load_roles();
-    return () => {
-      ignore = true;
-    };
-  }, []);
-
-  const activeCount = Array.isArray(employees)
-    ? employees.filter((e) => e.active).length
-    : 0;
+  const activeCount = employees.filter((e: Employee) => e.active).length;
 
   const projectStyles: Record<string, string> = {
     afterlight: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
@@ -118,25 +53,23 @@ export default function Employees() {
     "rhon studios": "bg-black/20 text-white border-zinc-400/30",
   };
 
-  // Roles que realmente tienen empleados
   const rolesInUse = useMemo(() => {
     const names = new Set(
-      employees.map((e) => e.role_name).filter((r): r is string => !!r),
+      employees.map((e: Employee) => e.role_name).filter((r: string | undefined): r is string => !!r),
     );
-    return roles.filter((r) => names.has(r.name));
+    return roles.filter((r: Role) => names.has(r.name));
   }, [employees, roles]);
 
-  // Proyectos que realmente tienen empleados asignados
   const projectsInUse = useMemo(() => {
     const names = new Set<string>();
-    employees.forEach((e) => {
+    employees.forEach((e: Employee) => {
       e.projects?.forEach((p) => names.add(p));
     });
     return Array.from(names).sort();
   }, [employees]);
 
   const filteredEmployees = useMemo(() => {
-    return employees.filter((e) => {
+    return employees.filter((e: Employee) => {
       const roleMatch =
         roleFilter === "all"
           ? true
@@ -171,16 +104,17 @@ export default function Employees() {
             Add Employee
           </button>
           <button
-            onClick={getEmployees}
+            onClick={() => refetch()}
             className="rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-700/60 transition-colors duration-150 cursor-pointer"
           >
             Refresh
           </button>
         </div>
       </div>
+
       {createModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="w-[500px] rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+          <div className="w-125 rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
             <div className="flex items-start justify-between mb-5">
               <div className="flex items-center gap-2.5">
                 <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-2">
@@ -213,6 +147,7 @@ export default function Employees() {
                   id="name"
                   placeholder="Employee name"
                   className="w-full rounded-xl bg-zinc-800 px-4 py-2 text-zinc-200"
+                  value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
@@ -227,6 +162,7 @@ export default function Employees() {
                   id="email"
                   placeholder="employee@email.com"
                   className="w-full rounded-xl bg-zinc-800 px-4 py-2 text-zinc-200"
+                  value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
@@ -237,19 +173,23 @@ export default function Employees() {
                   name="roleId"
                   id="roleId"
                   className="w-full rounded-xl bg-zinc-800 px-4 py-2 text-zinc-200"
-                  defaultValue="0"
+                  value={roleId}
                   onChange={(e) => setRoleId(Number(e.target.value))}
                 >
                   <option disabled value="0">
                     Select role
                   </option>
-                  {roles.map((role) => (
+                  {roles.map((role: Role) => (
                     <option key={role.id} value={role.id}>
                       {role.name}
                     </option>
                   ))}
                 </select>
               </div>
+
+              {addError && (
+                <p className="text-xs text-red-400">{addError}</p>
+              )}
             </div>
 
             <div className="flex justify-end gap-2 mt-6">
@@ -261,10 +201,11 @@ export default function Employees() {
               </button>
               <button
                 onClick={handleAddEmployee}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium cursor-pointer hover:bg-emerald-500 transition-colors"
+                disabled={addEmployee.isPending}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium cursor-pointer hover:bg-emerald-500 transition-colors disabled:opacity-50"
               >
                 <User className="h-4 w-4" />
-                Add Employee
+                {addEmployee.isPending ? "Adding..." : "Add Employee"}
               </button>
             </div>
           </div>
@@ -297,7 +238,7 @@ export default function Employees() {
             All
           </button>
 
-          {rolesInUse.map((r) => (
+          {rolesInUse.map((r: Role) => (
             <button
               key={r.id}
               onClick={() => setRoleFilter(r.name)}
@@ -311,7 +252,7 @@ export default function Employees() {
             </button>
           ))}
 
-          {employees.some((e) => !e.role_name) && (
+          {employees.some((e: Employee) => !e.role_name) && (
             <button
               onClick={() => setRoleFilter("none")}
               className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
@@ -326,7 +267,6 @@ export default function Employees() {
         </div>
       )}
 
-      {/* Filtro por Project */}
       {!loading && employees.length > 0 && projectsInUse.length > 0 && (
         <div className="mt-3 flex items-center gap-2 flex-wrap">
           <span className="inline-flex items-center gap-1.5 text-xs text-zinc-500 mr-1">
@@ -359,7 +299,7 @@ export default function Employees() {
             </button>
           ))}
 
-          {employees.some((e) => !e.projects?.length) && (
+          {employees.some((e: Employee) => !e.projects?.length) && (
             <button
               onClick={() => setProjectFilter("none")}
               className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
@@ -406,9 +346,13 @@ export default function Employees() {
           <span className="text-right">Status</span>
         </div>
 
-        {error && <div className="px-6 py-8 text-sm text-red-400">{error}</div>}
+        {employeesError && (
+          <div className="px-6 py-8 text-sm text-red-400">
+            {employeesError.message}
+          </div>
+        )}
 
-        {!error && loading && (
+        {!employeesError && loading && (
           <div className="divide-y divide-zinc-800/60">
             {[1, 2, 3, 4].map((i) => (
               <div
@@ -425,7 +369,7 @@ export default function Employees() {
           </div>
         )}
 
-        {!error && !loading && employees.length === 0 && (
+        {!employeesError && !loading && employees.length === 0 && (
           <div className="px-6 py-12 text-center">
             <p className="text-zinc-400 text-sm">No employees yet.</p>
             <p className="text-zinc-600 text-xs mt-1">
@@ -434,7 +378,7 @@ export default function Employees() {
           </div>
         )}
 
-        {!error &&
+        {!employeesError &&
           !loading &&
           employees.length > 0 &&
           filteredEmployees.length === 0 && (
@@ -445,12 +389,12 @@ export default function Employees() {
             </div>
           )}
 
-        {!error && !loading && filteredEmployees.length > 0 && (
+        {!employeesError && !loading && filteredEmployees.length > 0 && (
           <div className="flex flex-col h-full">
             <div className="hidden lg:flex flex-col flex-1 min-h-0">
               <div className="border border-zinc-800 bg-zinc-900/60 overflow-hidden flex flex-col h-full">
                 <ul className="flex-1 overflow-y-auto divide-y divide-zinc-800/60 pb-30">
-                  {filteredEmployees.map((employee) => (
+                  {filteredEmployees.map((employee: Employee) => (
                     <li
                       onClick={() => {
                         setEmployee(employee);
@@ -517,7 +461,7 @@ export default function Employees() {
               </div>
             </div>
             <div className="lg:hidden flex-1 overflow-y-auto divide-y divide-zinc-800">
-              {filteredEmployees.map((employee) => (
+              {filteredEmployees.map((employee: Employee) => (
                 <div
                   key={employee.id}
                   onClick={() => {
@@ -595,7 +539,7 @@ export default function Employees() {
             open={editModal}
             employee={employee}
             onClose={() => setEditModal(false)}
-            onUpdated={getEmployees}
+            onUpdated={() => setEditModal(false)}
             roles={roles}
           />
         )}

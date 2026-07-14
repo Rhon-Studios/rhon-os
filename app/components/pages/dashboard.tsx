@@ -2,7 +2,6 @@
 
 import { useUser } from "@/context/userContext";
 import { Task, Subtask } from "@/types/TypesDB";
-import { useEffect, useState } from "react";
 import {
   User,
   ListChecks,
@@ -11,57 +10,21 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useActiveView } from "@/context/activeViewContext";
+import { useMyTasks, useRevshare } from "@/app/hooks/useAppData";
 
 export default function Dashboard() {
   const { user, loading: userLoading } = useUser();
 
   const { setActiveKey } = useActiveView();
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [subtasks, setSubtasks] = useState<Subtask[]>([]);
-  const [fetching, setFetching] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [myRevshare, setMyRevshare] = useState(0);
 
-  const loading = userLoading || (!!user && fetching);
+  const {data, isLoading, error} = useMyTasks(true);
+  const {data: revshareData, isLoading: revshareLoading} = useRevshare();
 
-  useEffect(() => {
-    if (userLoading || !user) return;
+  const tasks: Task[] = data?.tasks || [];
+  const subtasks: Subtask[] = data?.subtasks || [];
+  const myRevshare: number = revshareData?.myRevshare || 0;
 
-    async function load() {
-      setFetching(true);
-      setError(null);
-
-      try {
-        const [tasksRes, revshareRes] = await Promise.all([
-          fetch("/api/tasks?myTasksOnly=true"),
-          fetch("/api/revshare"),
-        ]);
-
-        if (!tasksRes.ok) {
-          const data = await tasksRes.json();
-          setError(data.error || "Error loading tasks");
-          return;
-        }
-
-        if (!revshareRes.ok) {
-          const data = await revshareRes.json();
-          setError(data.error || "Error loading revshare");
-          return;
-        }
-
-        const tasksData = await tasksRes.json();
-        const revshareData = await revshareRes.json();
-
-        setTasks(tasksData.tasks);
-        setSubtasks(tasksData.subtasks);
-        setMyRevshare(revshareData.myRevshare);
-      } finally {
-        setFetching(false);
-      }
-    }
-
-    load();
-  }, [user, userLoading]);
+  const loading = isLoading || userLoading || revshareLoading;
 
   const stateStyles: Record<Task["state"], string> = {
     "not started": "bg-zinc-700/40 text-zinc-300 border-zinc-600/40",
@@ -190,7 +153,7 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {error && <div className="px-6 py-8 text-sm text-red-400">{error}</div>}
+        {error && <div className="px-6 py-8 text-sm text-red-400">{error.toString()}</div>}
 
         {!error && loading && (
           <div className="divide-y divide-zinc-800/60">

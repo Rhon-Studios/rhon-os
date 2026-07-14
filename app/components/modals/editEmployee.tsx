@@ -1,8 +1,9 @@
 "use client";
 
+import { useDeleteEmployee, useProjects, useUpdateEmployee } from "@/app/hooks/useAppData";
 import { Employee, Project, Role } from "@/types/TypesDB";
 import { Pencil, Trash, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export function EditEmployeeModal({
   open,
@@ -17,39 +18,22 @@ export function EditEmployeeModal({
   employee: Employee | null;
   roles: Role[];
 }) {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    active: true,
-    role_id: 0,
-    country: "",
-    timezone: "",
-    gender: "",
-    projectIds: [] as number[],
-  });
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [form, setForm] = useState(() => ({
+    id: employee!.id,
+    name: employee?.name ?? "",
+    email: employee?.email ?? "",
+    active: employee?.active ?? true,
+    role_id: employee?.role_id ?? 0,
+    projectIds: employee?.project_ids ?? [],
+    country: employee?.country ?? "",
+    timezone: employee?.timezone ?? "",
+    gender: employee?.gender ?? "",
+  }));
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
-  useEffect(() => {
-    fetch("/api/projects")
-      .then((r) => r.json())
-      .then(setProjects);
-  }, []);
-
-  useEffect(() => {
-    if (!employee) return;
-
-    setForm({
-      name: employee.name,
-      email: employee.email,
-      active: employee.active,
-      role_id: employee.role_id,
-      projectIds: employee.project_ids ?? [],
-      country: employee.country ?? "",
-      timezone: employee.timezone ?? "",
-      gender: employee.gender ?? "",
-    });
-  }, [employee]);
+  const { data: projects = [] } = useProjects();
+  const updateEmployee = useUpdateEmployee();
+  const deleteEmployee = useDeleteEmployee();
 
   const toggleProject = (id: number) => {
     setForm((prev) => ({
@@ -60,34 +44,33 @@ export function EditEmployeeModal({
     }));
   };
 
-  const onSave = async () => {
-    if (!employee) return;
-
-    await fetch(`/api/employees/${employee.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
+  const onSave = () =>
+    updateEmployee.mutate(
+      {form },
+      {
+        onSuccess: () => {
+          onClose();
+          onUpdated();
+        },
       },
-      body: JSON.stringify(form),
-    });
-
-    onClose();
-    onUpdated();
-  };
-
-  const onDelete = async () => {
-    await fetch(`/api/employees/${employee?.id}`, {
-      method: "DELETE",
-    });
-    onClose();
-    onUpdated();
+    );
+  const onDelete = () => {
+    deleteEmployee.mutate(
+      employee!.id ,
+      {
+        onSuccess: () => {
+          setDeleteModalOpen(false);
+          onClose();
+          onUpdated();
+        }
+      },)
   };
 
   if (!open || !employee) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-[500px] rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+      <div className="w-125 rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
         <div className="mb-5 flex items-start justify-between">
           <div className="flex items-center gap-2.5">
             <div className="rounded-lg border border-blue-500/20 bg-blue-500/10 p-2">
@@ -181,7 +164,7 @@ export function EditEmployeeModal({
             <label className="mb-2 block text-xs text-zinc-500">Projects</label>
 
             <div className="flex flex-wrap gap-2">
-              {projects.map((project) => {
+              {projects.map((project: Project) => {
                 const selected = form.projectIds.includes(project.id);
 
                 return (

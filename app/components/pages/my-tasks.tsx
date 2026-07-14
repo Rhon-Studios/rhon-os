@@ -1,19 +1,19 @@
 "use client";
 
-import { useUser } from "@/context/userContext";
 import { Task, Subtask } from "@/types/TypesDB";
-import { useCallback, useEffect, useState } from "react";
 import { RefreshCw, CircleDot } from "lucide-react";
+import { useMyTasks } from "@/app/hooks/useAppData";
 
 export default function MyTasks() {
-  const { user, loading: userLoading } = useUser();
 
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [subtasks, setSubtasks] = useState<Subtask[]>([]);
-  const [fetching, setFetching] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {data, error, isLoading, refetch} = useMyTasks(true);
 
-  const loading = userLoading || (!!user && fetching);
+  console.log(data);
+  
+
+  const tasks: Task[] = data?.tasks || [];
+  const subtasks: Subtask[] = data?.subtasks || [];
+
 
   const priorityStyles: Record<Task["priority"], string> = {
     critic: "bg-red-500/10 text-red-400 border-red-500/20",
@@ -63,36 +63,6 @@ export default function MyTasks() {
     );
   }
 
-  const getTasks = useCallback(async () => {
-    if (!user) return;
-
-    setFetching(true);
-    setError(null);
-
-    try {
-      const res = await fetch(`/api/tasks?myTasksOnly=${true}`);
-
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Error loading tasks");
-        return;
-      }
-
-      const data = await res.json();
-      setTasks(data.tasks);
-      setSubtasks(data.subtasks);
-    } finally {
-      setFetching(false);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (userLoading || !user) return;
-
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    getTasks();
-  }, [user, userLoading, getTasks]);
-
   return (
     <div className="h-full flex flex-col text-zinc-200 p-8">
       <div className="flex items-center justify-between mb-1">
@@ -103,7 +73,7 @@ export default function MyTasks() {
         </div>
 
         <button
-          onClick={getTasks}
+          onClick={() => refetch()}
           className="inline-flex items-center gap-1.5 rounded-xl border cursor-pointer border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm text-zinc-200 transition-colors duration-150 hover:bg-zinc-700/60"
         >
           <RefreshCw className="h-4 w-4" />
@@ -116,12 +86,12 @@ export default function MyTasks() {
       </h1>
 
       <p className="text-zinc-500 text-sm mt-1">
-        {loading
+        {isLoading
           ? "Loading your tasks..."
           : `${tasks.length} task${tasks.length === 1 ? "" : "s"} with items assigned to you`}
       </p>
 
-      <div className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900/60 max-h-[600px] overflow-y-auto">
+      <div className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900/60 max-h-150 overflow-y-auto">
         <div className="px-6 py-4 border-b border-zinc-800 sticky top-0 bg-zinc-900/95 backdrop-blur">
           <h2 className="text-base font-semibold text-white">Your tasks</h2>
           <p className="text-zinc-500 text-xs mt-0.5">
@@ -129,9 +99,9 @@ export default function MyTasks() {
           </p>
         </div>
 
-        {error && <div className="px-6 py-8 text-sm text-red-400">{error}</div>}
+        {error && <div className="px-6 py-8 text-sm text-red-400">{error.toString()}</div>}
 
-        {!error && loading && (
+        {!error && isLoading && (
           <div className="divide-y divide-zinc-800/60">
             {[1, 2, 3].map((i) => (
               <div key={i} className="px-6 py-5 animate-pulse">
@@ -145,7 +115,7 @@ export default function MyTasks() {
           </div>
         )}
 
-        {!error && !loading && tasks.length === 0 && (
+        {!error && !isLoading && tasks.length === 0 && (
           <div className="px-6 py-12 text-center">
             <p className="text-zinc-400 text-sm">
               You have no assigned tasks or subtasks. Ask a founder or a Lead
@@ -154,7 +124,7 @@ export default function MyTasks() {
           </div>
         )}
 
-        {!error && !loading && tasks.length > 0 && (
+        {!error && !isLoading && tasks.length > 0 && (
           <div className="divide-y divide-zinc-800/60">
             {tasks.map((task) => {
               const taskSubtasks = subtasks.filter(
@@ -248,7 +218,7 @@ export default function MyTasks() {
                         </div>
 
                         {subtask.notes && (
-                          <p className="break-words text-sm text-zinc-300 bg-zinc-900/50 rounded-lg px-3 py-2 mt-3 border border-zinc-800">
+                          <p className="wrap-break-word text-sm text-zinc-300 bg-zinc-900/50 rounded-lg px-3 py-2 mt-3 border border-zinc-800">
                             {subtask.notes}
                           </p>
                         )}

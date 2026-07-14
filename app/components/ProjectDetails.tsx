@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { Task, Subtask } from "@/types/TypesDB";
+import { useState, useMemo } from "react";
+import { Task, Subtask, Role } from "@/types/TypesDB";
 import { CreateTaskModal } from "./modals/createTask";
 import { CreateSubtaskModal } from "./modals/createSubtask";
 import { EditTaskModal } from "./modals/editTask";
@@ -17,6 +17,7 @@ import {
   Filter,
   X,
 } from "lucide-react";
+import { useProjectTasks, useRoles } from "../hooks/useAppData";
 
 export function ProjectDetails({ projectId }: { projectId: number }) {
   const [openCreate, setOpenCreate] = useState(false);
@@ -29,21 +30,23 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
   const [openEdit, setOpenEdit] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [subtasks, setSubtasks] = useState<Subtask[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [projectName, setProjectName] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [employees, setEmployees] = useState<{ id: number; name: string }[]>(
-    [],
-  );
-  const [roles, setRoles] = useState<{ id: number; name: string }[]>([]);
-
   const [roleFilter, setRoleFilter] = useState<string>("all");
 
   const [collapsedTasks, setCollapsedTasks] = useState<Set<number>>(new Set());
+  const {
+    data,
+    isLoading: loading,
+    error: queryError,
+    refetch,
+  } = useProjectTasks(projectId);
+  const { data: roles = [] } = useRoles();
 
+  const tasks = useMemo(() => data?.tasks ?? [], [data?.tasks]);
+  const subtasks = data?.subtasks ?? [];
+  const projectName = data?.projectName ?? null;
+  const isAdmin = data?.isAdmin ?? false;
+  const employees = data?.employeesInProyect ?? [];
+  const error = queryError?.message ?? null;
   const toggleCollapsed = (taskId: number) => {
     setCollapsedTasks((prev) => {
       const next = new Set(prev);
@@ -73,77 +76,19 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
     "cancelled",
   ];
 
-  const getTasks = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch(`/api/tasks?projectId=${projectId}`);
-
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Error loading tasks");
-        return;
-      }
-
-      const data = await res.json();
-      setTasks(data.tasks);
-      setSubtasks(data.subtasks);
-      setProjectName(data.project);
-      setIsAdmin(data.isAdmin);
-      setEmployees(data.employeesInProyect ?? []);
-    } finally {
-      setLoading(false);
-    }
-  }, [projectId]);
-
-  useEffect(() => {
-    let ignore = false;
-
-    async function load() {
-      try {
-        const res = await fetch(`/api/tasks?projectId=${projectId}`);
-
-        if (!res.ok) {
-          const data = await res.json();
-          if (!ignore) setError(data.error || "Error loading tasks");
-          return;
-        }
-
-        const data = await res.json();
-
-        if (!ignore) {
-          setTasks(data.tasks);
-          setSubtasks(data.subtasks);
-          setProjectName(data.projectName);
-          setIsAdmin(data.isAdmin);
-          setEmployees(data.employeesInProyect ?? []);
-        }
-      } finally {
-        if (!ignore) setLoading(false);
-      }
-    }
-    load();
-
-    fetch("/api/roles")
-      .then((res) => res.json())
-      .then(setRoles);
-    return () => {
-      ignore = true;
-    };
-  }, [projectId]);
-
   const rolesInUse = useMemo(() => {
     const names = new Set(
-      tasks.map((t) => t.role_name).filter((r): r is string => !!r),
+      tasks
+        .map((t: Task) => t.role_name)
+        .filter((r: string | undefined): r is string => !!r),
     );
-    return roles.filter((r) => names.has(r.name));
+    return roles.filter((r: Role) => names.has(r.name));
   }, [tasks, roles]);
 
   const filteredTasks = useMemo(() => {
     if (roleFilter === "all") return tasks;
-    if (roleFilter === "none") return tasks.filter((t) => !t.role_name);
-    return tasks.filter((t) => t.role_name === roleFilter);
+    if (roleFilter === "none") return tasks.filter((t: Task) => !t.role_name);
+    return tasks.filter((t: Task) => t.role_name === roleFilter);
   }, [tasks, roleFilter]);
 
   const priorityStyles: Record<Task["priority"], string> = {
@@ -217,7 +162,7 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
                 <CreateTaskModal
                   open={openCreate}
                   onClose={() => setOpenCreate(false)}
-                  onCreated={getTasks}
+                  onCreated={() => refetch()}
                   projectId={projectId}
                   priorities={priorities}
                   states={states}
@@ -228,7 +173,16 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
           )}
 
           <button
-            onClick={getTasks}
+            onClick={(e) => {
+              refetch();
+
+              const icon = e.currentTarget.querySelector("svg");
+              icon?.classList.add("animate-spin");
+
+              setTimeout(() => {
+                icon?.classList.remove("animate-spin");
+              }, 500);
+            }}
             className="inline-flex items-center gap-1.5 rounded-xl border cursor-pointer border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm text-zinc-200 transition-colors duration-150 hover:bg-zinc-700/60"
           >
             <RefreshCw className="h-4 w-4" />
@@ -265,7 +219,7 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
             All
           </button>
 
-          {rolesInUse.map((r) => (
+          {rolesInUse.map((r: Role) => (
             <button
               key={r.id}
               onClick={() => setRoleFilter(r.name)}
@@ -279,7 +233,7 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
             </button>
           ))}
 
-          {tasks.some((t) => !t.role_name) && (
+          {tasks.some((t: Task) => !t.role_name) && (
             <button
               onClick={() => setRoleFilter("none")}
               className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
@@ -304,7 +258,7 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
         </div>
       )}
 
-      <div className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900/60 max-h-[600px] overflow-y-auto">
+      <div className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900/60 max-h-150 overflow-y-auto">
         <div className="px-6 py-4 border-b border-zinc-800 sticky top-0 bg-zinc-900/95 backdrop-blur">
           <h2 className="text-base font-semibold text-white">Tasks</h2>
           <p className="text-zinc-500 text-xs mt-0.5">
@@ -349,9 +303,9 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
 
         {!error && !loading && filteredTasks.length > 0 && (
           <div className="divide-y divide-zinc-800/60">
-            {filteredTasks.map((task) => {
+            {filteredTasks.map((task: Task) => {
               const taskSubtasks = subtasks.filter(
-                (s) => s.task_id === task.id,
+                (s: Subtask) => s.task_id === task.id,
               );
               const isCollapsed = collapsedTasks.has(task.id);
 
@@ -400,7 +354,7 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
                           <span className="text-zinc-500 text-xs w-16 shrink-0">
                             RevShare
                           </span>
-                          <div className="flex-1 h-1.5 rounded-full bg-zinc-800 overflow-hidden max-w-[160px]">
+                          <div className="flex-1 h-1.5 rounded-full bg-zinc-800 overflow-hidden max-w-40">
                             <div
                               className="h-full rounded-full bg-emerald-500"
                               style={{
@@ -456,7 +410,7 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
                         </p>
                       )}
 
-                      {taskSubtasks.map((subtask) => (
+                      {taskSubtasks.map((subtask: Subtask) => (
                         <div
                           key={subtask.id}
                           className="rounded-xl bg-zinc-800/40 border border-zinc-800 px-4 py-3.5 hover:border-zinc-700 transition-colors"
@@ -537,7 +491,7 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
                               </div>
 
                               {subtask.notes && (
-                                <p className="break-words text-sm text-zinc-300 bg-zinc-900/50 rounded-lg px-3 py-2 mt-3 border border-zinc-800">
+                                <p className="wrap-break-words text-sm text-zinc-300 bg-zinc-900/50 rounded-lg px-3 py-2 mt-3 border border-zinc-800">
                                   {subtask.notes}
                                 </p>
                               )}
@@ -598,7 +552,7 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
         <CreateSubtaskModal
           open={openSubtask}
           onClose={() => setOpenSubtask(false)}
-          onCreated={getTasks}
+          onCreated={() => refetch()}
           taskId={activeTaskId}
           priorities={priorities}
           states={states}
@@ -610,7 +564,7 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
         key={editingSubtask?.id}
         open={openEditSubtask}
         onClose={() => setOpenEditSubtask(false)}
-        onUpdated={getTasks}
+        onUpdated={() => refetch()}
         subtask={editingSubtask}
         priorities={priorities}
         states={states}
@@ -622,7 +576,7 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
         key={editingTask?.id}
         open={openEdit}
         onClose={() => setOpenEdit(false)}
-        onUpdated={getTasks}
+        onUpdated={() => refetch()}
         task={editingTask}
         priorities={priorities}
         states={states}

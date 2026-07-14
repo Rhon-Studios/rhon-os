@@ -32,7 +32,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    refresh();
+    const loadUser = async () => {
+      const res = await fetch("/api/auth/me");
+      const data = await res.json();
+      setUser(data.user);
+      setLoading(false);
+    };
+
+    void loadUser();
   }, []);
 
   const logOut = async () => {

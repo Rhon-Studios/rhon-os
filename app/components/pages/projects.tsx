@@ -1,55 +1,15 @@
 "use client";
+import { useProjects } from "@/app/hooks/useAppData";
 import { useActiveView } from "@/context/activeViewContext";
 import { Project } from "@/types/TypesDB";
-import { useState, useEffect, useCallback } from "react";
 
 export default function Projects() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const {data = [], isLoading, error, refetch} = useProjects();
+
 
   const { setActiveKey, setProjectId } = useActiveView();
 
-  const getProjects = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/projects");
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Error al cargar proyectos");
-        return;
-      }
-      const data = await res.json();
-      setProjects(data);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
-  useEffect(() => {
-    let ignore = false;
-
-    async function load() {
-      try {
-        const res = await fetch("/api/projects");
-        if (!res.ok) {
-          const data = await res.json();
-          if (!ignore) setError(data.error || "Error al cargar proyectos");
-          return;
-        }
-        const data = await res.json();
-        if (!ignore) setProjects(data);
-      } finally {
-        if (!ignore) setLoading(false);
-      }
-    }
-
-    load();
-    return () => {
-      ignore = true;
-    };
-  }, []);
 
   return (
     <div className="h-full flex flex-col text-zinc-200 p-8">
@@ -60,7 +20,7 @@ export default function Projects() {
           <span className="text-zinc-300">Projects</span>
         </div>
         <button
-          onClick={getProjects}
+          onClick={() => refetch()}
           className="rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-700/60 transition-colors duration-150 cursor-pointer"
         >
           Refresh
@@ -68,9 +28,9 @@ export default function Projects() {
       </div>
       <h1 className="text-3xl font-semibold text-white mt-3">Projects</h1>
       <p className="text-zinc-500 text-sm mt-1">
-        {loading
+        {isLoading
           ? "Loading your projects…"
-          : `${projects.length} active project${projects.length === 1 ? "" : "s"}`}
+          : `${data.length} active project${data.length === 1 ? "" : "s"}`}
       </p>
       <div className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900/60 overflow-hidden">
         <div className="px-6 py-4 border-b border-zinc-800">
@@ -84,8 +44,8 @@ export default function Projects() {
           <span>Name</span>
           <span className="text-right">ID</span>
         </div>
-        {error && <div className="px-6 py-8 text-sm text-red-400">{error}</div>}
-        {!error && loading && (
+        {error && <div className="px-6 py-8 text-sm text-red-400">{error.toString()}</div>}
+        {!error && isLoading  && (
           <div className="divide-y divide-zinc-800/60">
             {[1, 2, 3].map((i) => (
               <div
@@ -99,7 +59,7 @@ export default function Projects() {
             ))}
           </div>
         )}
-        {!error && !loading && projects.length === 0 && (
+        {!error && !isLoading && data.length === 0 && (
           <div className="px-6 py-12 text-center">
             <p className="text-zinc-400 text-sm">No projects yet.</p>
             <p className="text-zinc-600 text-xs mt-1">
@@ -107,9 +67,9 @@ export default function Projects() {
             </p>
           </div>
         )}
-        {!error && !loading && projects.length > 0 && (
+        {!error && !isLoading && data.length > 0 && (
           <ul className="divide-y divide-zinc-800/60">
-            {projects.map((project) => (
+            {data.map((project: Project) => (
               <li
                 onClick={() => {
                   setProjectId(project.id);

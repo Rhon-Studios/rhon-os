@@ -58,7 +58,7 @@ export function CreateTaskModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-[500px] rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+      <div className="w-125 rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
         <div className="flex items-start justify-between mb-5">
           <div className="flex items-center gap-2.5">
             <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-2">

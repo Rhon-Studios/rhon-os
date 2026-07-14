@@ -89,6 +89,9 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    console.log(myRevshare);
+    
+
     return NextResponse.json({
       myRevshare: Number(myRevshare.toFixed(2)),
     });

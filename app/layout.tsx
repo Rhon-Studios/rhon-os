@@ -4,6 +4,7 @@ import "./globals.css";
 import { UserProvider } from "@/context/userContext";
 import { ActiveViewProvider } from "@/context/activeViewContext";
 import { Rye } from "next/font/google";
+import { Providers } from "./providers/providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,7 +39,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <UserProvider>
+          <Providers>
+
           <ActiveViewProvider>{children}</ActiveViewProvider>
+          </Providers>
         </UserProvider>
       </body>
     </html>
