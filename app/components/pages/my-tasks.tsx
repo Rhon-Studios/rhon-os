@@ -91,7 +91,7 @@ export default function MyTasks() {
           : `${tasks.length} task${tasks.length === 1 ? "" : "s"} with items assigned to you`}
       </p>
 
-      <div className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900/60 max-h-150 overflow-y-auto">
+      <div className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900/60 min-h-[80%] overflow-y-auto">
         <div className="px-6 py-4 border-b border-zinc-800 sticky top-0 bg-zinc-900/95 backdrop-blur">
           <h2 className="text-base font-semibold text-white">Your tasks</h2>
           <p className="text-zinc-500 text-xs mt-0.5">

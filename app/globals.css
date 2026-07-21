@@ -18,3 +18,58 @@ body {
     color: var(--foreground);
     font-family: Arial, Helvetica, sans-serif;
 }
+
+
+/* react-datepicker dark theme overrides */
+.rhon-datepicker .react-datepicker {
+  background-color: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 0.75rem;
+  font-family: inherit;
+  color: #e4e4e7; /* zinc-200 */
+}
+
+.rhon-datepicker .react-datepicker__header {
+  background-color: #27272a;
+  border-bottom: 1px solid #3f3f46;
+  border-top-left-radius: 0.75rem;
+  border-top-right-radius: 0.75rem;
+}
+
+.rhon-datepicker .react-datepicker__current-month,
+.rhon-datepicker .react-datepicker__day-name {
+  color: #e4e4e7;
+}
+
+.rhon-datepicker .react-datepicker__day {
+  color: #d4d4d8;
+}
+
+.rhon-datepicker .react-datepicker__day:hover {
+  background-color: #3f3f46;
+  border-radius: 0.5rem;
+}
+
+.rhon-datepicker .react-datepicker__day--selected,
+.rhon-datepicker .react-datepicker__day--keyboard-selected {
+  background-color: #059669;
+  border-radius: 0.5rem;
+  color: white;
+}
+
+.rhon-datepicker .react-datepicker__day--outside-month {
+  color: #52525b;
+}
+
+.rhon-datepicker .react-datepicker__navigation-icon::before {
+  border-color: #a1a1aa;
+}
+
+.rhon-datepicker .react-datepicker__triangle {
+  display: none;
+}
+
+/* Input field itself */
+.react-datepicker-wrapper {
+  width: 100%;
+}

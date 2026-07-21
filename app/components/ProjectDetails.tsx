@@ -18,11 +18,14 @@ import {
   X,
 } from "lucide-react";
 import { useProjectTasks, useRoles } from "../hooks/useAppData";
+import { formatDateDisplay } from "../lib/dates";
 
 export function ProjectDetails({ projectId }: { projectId: number }) {
   const [openCreate, setOpenCreate] = useState(false);
   const [openSubtask, setOpenSubtask] = useState(false);
   const [activeTaskId, setActiveTaskId] = useState<number | null>(null);
+
+  const [openFilter, setOpenFilter] = useState(false);
 
   const [openEditSubtask, setOpenEditSubtask] = useState(false);
   const [editingSubtask, setEditingSubtask] = useState<Subtask | null>(null);
@@ -155,7 +158,7 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
                 className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium cursor-pointer hover:bg-emerald-500 transition-colors"
               >
                 <Plus className="h-4 w-4" />
-                New Task
+                <span className="hidden md:inline">New Task</span>
               </button>
 
               {openCreate && (
@@ -186,7 +189,15 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
             className="inline-flex items-center gap-1.5 rounded-xl border cursor-pointer border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm text-zinc-200 transition-colors duration-150 hover:bg-zinc-700/60"
           >
             <RefreshCw className="h-4 w-4" />
-            Refresh
+            <span className="hidden md:inline">Refresh</span>
+          </button>
+
+          <button
+            onClick={() => setOpenFilter(!openFilter)}
+            className="inline-flex items-center gap-1.5 rounded-xl border cursor-pointer border-zinc-700 bg-zinc-800/60 px-4 py-2 text-sm text-zinc-200 transition-colors duration-150 hover:bg-zinc-700/60"
+          >
+            <Filter className="h-4 w-4" />
+            <span className="hidden md:inline">Filter</span>
           </button>
         </div>
       </div>
@@ -201,7 +212,7 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
           : `${filteredTasks.length} of ${tasks.length} task${tasks.length === 1 ? "" : "s"}`}
       </p>
 
-      {!loading && tasks.length > 0 && (
+      {!loading && tasks.length > 0 && openFilter &&(
         <div className="mt-5 flex items-center gap-2 flex-wrap">
           <span className="inline-flex items-center gap-1.5 text-xs text-zinc-500 mr-1">
             <Filter className="h-3.5 w-3.5" />
@@ -258,7 +269,7 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
         </div>
       )}
 
-      <div className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900/60 max-h-150 overflow-y-auto">
+      <div className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900/60 min-h-[70%] overflow-y-auto">
         <div className="px-6 py-4 border-b border-zinc-800 sticky top-0 bg-zinc-900/95 backdrop-blur">
           <h2 className="text-base font-semibold text-white">Tasks</h2>
           <p className="text-zinc-500 text-xs mt-0.5">
@@ -371,7 +382,7 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
                           <p className="text-xs">
                             <span className="text-zinc-500">Finished:</span>{" "}
                             <span className="text-zinc-300">
-                              {task.finish_date}
+                              {formatDateDisplay(task.finish_date)}
                             </span>
                           </p>
                         )}
@@ -439,7 +450,7 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
                                 />
                               </div>
 
-                              <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3">
+                              <div className="mt-3 grid grid-cols-5 gap-x-4 gap-y-3">
                                 <div>
                                   <p className="text-[10px] uppercase tracking-wide text-zinc-500 font-medium">
                                     Assigned to
@@ -484,10 +495,22 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
                                         Finished
                                       </p>
                                       <p className="text-sm text-zinc-100 mt-0.5">
-                                        {subtask.finish_date}
+                                        {formatDateDisplay(subtask.finish_date)}
                                       </p>
                                     </div>
                                   )}
+                              {isAdmin && (
+                                <button
+                                  onClick={() => {
+                                    setEditingSubtask(subtask);
+                                    setOpenEditSubtask(true);
+                                  }}
+                                  className="mt-3 justify-self-start col-end-6 inline-flex items-center gap-1.5 rounded-lg bg-zinc-700/60 px-3 py-1.5 text-xs font-medium cursor-pointer hover:bg-zinc-600 transition-colors"
+                                >
+                                  <Pencil className="h-3 w-3" />
+                                  Edit
+                                </button>
+                              )}
                               </div>
 
                               {subtask.notes && (
@@ -496,18 +519,6 @@ export function ProjectDetails({ projectId }: { projectId: number }) {
                                 </p>
                               )}
 
-                              {isAdmin && (
-                                <button
-                                  onClick={() => {
-                                    setEditingSubtask(subtask);
-                                    setOpenEditSubtask(true);
-                                  }}
-                                  className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-zinc-700/60 px-3 py-1.5 text-xs font-medium cursor-pointer hover:bg-zinc-600 transition-colors"
-                                >
-                                  <Pencil className="h-3 w-3" />
-                                  Edit
-                                </button>
-                              )}
                             </div>
                           </div>
                         </div>

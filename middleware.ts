@@ -9,7 +9,7 @@ export async function middleware(req: NextRequest) {
   const isProtectedRoute = req.nextUrl.pathname.startsWith("/dashboard");
 
   if ((isAdminRoute || isProtectedRoute) && !session) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(new URL("/", req.url));
   }
 
   if (isAdminRoute && session?.role !== "admin") {

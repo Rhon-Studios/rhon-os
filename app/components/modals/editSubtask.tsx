@@ -1,7 +1,10 @@
 "use client";
 import { useState } from "react";
 import { Subtask } from "@/types/TypesDB";
-import { Pencil, X, Save } from "lucide-react";
+import { Pencil, X, Save, Calendar } from "lucide-react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { parseDateString, toDateString } from "@/app/lib/dates";
 
 export function EditSubtaskModal({
   open,
@@ -31,6 +34,7 @@ export function EditSubtaskModal({
     meant_to_assign: number | null;
     done_by: number | null;
     notes: string;
+    finish_date: Date | null;
   }>(() => ({
     name: subtask?.name ?? "",
     priority: subtask?.priority ?? "medium",
@@ -40,6 +44,7 @@ export function EditSubtaskModal({
     meant_to_assign: subtask?.meant_to_assign ?? null,
     done_by: subtask?.done_by ?? null,
     notes: subtask?.notes ?? "",
+    finish_date: parseDateString(subtask?.finish_date),
   }));
 
   const onEditSubtask = async () => {
@@ -48,7 +53,10 @@ export function EditSubtaskModal({
     await fetch(`/api/subtasks/${subtask.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editSubtask),
+      body: JSON.stringify({
+        ...editSubtask,
+        finish_date: toDateString(editSubtask.finish_date),
+      }),
     });
 
     onClose();
@@ -145,6 +153,29 @@ export function EditSubtaskModal({
               ))}
             </select>
           </div>
+
+          {editSubtask.state === "done" && (
+            <div>
+              <label className="mb-1 flex items-center gap-1.5 text-xs text-zinc-500">
+                <Calendar className="h-3.5 w-3.5" />
+                Finish date
+              </label>
+              <DatePicker
+                selected={editSubtask.finish_date}
+                onChange={(date: Date | null) =>
+                  setEditSubtask({ ...editSubtask, finish_date: date })
+                }
+                dateFormat="MMM d, yyyy"
+                placeholderText="Select a date"
+                isClearable
+                showTimeSelect={false}
+                className="w-full rounded-xl bg-zinc-800 px-4 py-2 text-zinc-200 outline-none"
+                wrapperClassName="w-full"
+                popperClassName="rhon-datepicker"
+                calendarClassName="rhon-datepicker-calendar"
+              />
+            </div>
+          )}
 
           <div>
             <label className="mb-1 block text-xs text-zinc-500">

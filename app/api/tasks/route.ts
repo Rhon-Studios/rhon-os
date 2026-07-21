@@ -57,7 +57,8 @@ export async function GET(req: NextRequest) {
           s.*,
           a.name AS assigned_to_name,
           d.name AS done_by_name,
-          m.name AS meant_to_assign_name
+          m.name AS meant_to_assign_name,
+          s.finish_date::text AS finish_date
         FROM subtasks s
         LEFT JOIN employee a ON a.id = s.assigned_to
         LEFT JOIN employee d ON d.id = s.done_by
@@ -142,7 +143,8 @@ export async function GET(req: NextRequest) {
           s.*,
           a.name AS assigned_to_name,
           d.name AS done_by_name,
-          m.name AS meant_to_assign_name
+          m.name AS meant_to_assign_name,
+          s.finish_date::text AS finish_date
         FROM subtasks s
         LEFT JOIN employee a ON a.id = s.assigned_to
         LEFT JOIN employee d ON d.id = s.done_by
